@@ -16,8 +16,8 @@ class OverviewCardsMediumScreen extends StatelessWidget {
         Row(
                   children: [
                     InfoCard(
-                      title: "Rides in progress",
-                      value: "7",
+                      title: "Total Surveys",
+                      value: "17",
                       onTap: () {},
                   topColor: Colors.orange,
 
@@ -26,8 +26,8 @@ class OverviewCardsMediumScreen extends StatelessWidget {
                       width: width / 64,
                     ),
                     InfoCard(
-                      title: "Packages delivered",
-                      value: "17",
+                      title: "Surveys Recieved",
+                      value: "10",
                   topColor: Colors.lightGreen,
 
                       onTap: () {},
@@ -42,21 +42,12 @@ class OverviewCardsMediumScreen extends StatelessWidget {
                   children: [
              
                     InfoCard(
-                      title: "Cancelled delivery",
-                      value: "3",
+                      title: "Surveys Pending",
+                      value: "7",
                   topColor: Colors.redAccent,
 
                       onTap: () {},
                     ),
-                    SizedBox(
-                      width: width / 64,
-                    ),
-                    InfoCard(
-                      title: "Scheduled deliveries",
-                      value: "32",
-                      onTap: () {},
-                    ),
-                
                   ],
                 ),
       ],

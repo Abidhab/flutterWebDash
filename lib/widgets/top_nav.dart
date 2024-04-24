@@ -10,9 +10,9 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
           ? Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 16),
+                  padding: const EdgeInsets.only(left: 25),
                   child: Image.asset(
-                    "assets/icons/logo.png",
+                    "assets/icons/fs logo.png",
                     width: 28,
                   ),
                 ),
@@ -72,7 +72,7 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
             width: 24,
           ),
           const CustomText(
-            text: "Santos Enoque",
+            text: "Abid Habib",
             color: lightGrey,
           ),
           const SizedBox(

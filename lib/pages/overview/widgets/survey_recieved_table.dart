@@ -4,8 +4,8 @@ import 'package:flutter_web_dashboard/constants/style.dart';
 import 'package:flutter_web_dashboard/widgets/custom_text.dart';
 
 /// Example without datasource
-class AvailableDriversTable extends StatelessWidget {
-  const AvailableDriversTable({super.key});
+class SurveysRecievedTable extends StatelessWidget {
+  const SurveysRecievedTable({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class AvailableDriversTable extends StatelessWidget {
                 width: 10,
               ),
               CustomText(
-                text: "Available Drivers",
+                text: "Surveys Recieved",
                 color: lightGrey,
                 weight: FontWeight.bold,
               ),
@@ -43,11 +43,11 @@ class AvailableDriversTable extends StatelessWidget {
               minWidth: 600,
               columns: const [
                 DataColumn2(
-                  label: Text("Name"),
+                  label: Text("Project Name"),
                   size: ColumnSize.L,
                 ),
                 DataColumn(
-                  label: Text('Location'),
+                  label: Text('Client Name'),
                 ),
                 DataColumn(
                   label: Text('Rating'),
@@ -60,8 +60,8 @@ class AvailableDriversTable extends StatelessWidget {
                 7,
                 (index) => DataRow(
                   cells: [
-                    const DataCell(CustomText(text: "Santos Enoque")),
-                    const DataCell(CustomText(text: "New yourk city")),
+                    const DataCell(CustomText(text: "F1 Car")),
+                    const DataCell(CustomText(text: "Dr Qais")),
                     const DataCell(
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -81,7 +81,7 @@ class AvailableDriversTable extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: CustomText(
-                          text: "Assign Delivery",
+                          text: "Detail",
                           color: active.withOpacity(.7),
                           weight: FontWeight.bold,
                         ),

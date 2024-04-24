@@ -4,9 +4,79 @@ import 'package:flutter_web_dashboard/routing/routes.dart';
 import 'package:flutter_web_dashboard/widgets/custom_text.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AuthenticationPage extends StatelessWidget {
-  const AuthenticationPage({Key? key}) : super(key: key);
+import '../overview/overview.dart';
+
+class AuthenticationPage extends StatefulWidget {
+  const AuthenticationPage({Key? key});
+
+  @override
+  State<AuthenticationPage> createState() => _AuthenticationPageState();
+}
+
+class _AuthenticationPageState extends State<AuthenticationPage> {
+  String adminEmail = "";
+  String adminPass = "";
+
+  allowAdminToLogin() async {
+    SnackBar snackBar = SnackBar(
+      content: Text(
+        'Checking Credentials, Please wait',
+        style: TextStyle(fontSize: 36, color: Colors.black),
+      ),
+      backgroundColor: Colors.white,
+      duration: Duration(seconds: 5),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    User? currentAdmin;
+    await FirebaseAuth.instance
+        .signInWithEmailAndPassword(
+      email: adminEmail,
+      password: adminPass,
+    )
+        .then((fAuth) => currentAdmin = fAuth.user)
+        .catchError((onError) {
+      final snackBar = SnackBar(
+        content: Text(
+          'Error Occured' + onError.toString(),
+          style: TextStyle(fontSize: 36, color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
+
+    if (currentAdmin != null) {
+      await FirebaseFirestore.instance
+          .collection("admins")
+          .doc(currentAdmin!.uid)
+          .get()
+          .then((snap) {
+        if (snap.exists) {
+          print('Document found, navigating to HomeScreen...');
+          Get.offNamed(overviewPageRoute);
+        } else {
+          print('No record found');
+          SnackBar snackBar = SnackBar(
+            content: Text(
+              'No Record Found',
+              style: TextStyle(fontSize: 36, color: Colors.black),
+            ),
+            backgroundColor: Colors.white,
+            duration: Duration(seconds: 5),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }).catchError((error) {
+        print('Error: $error');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,8 +90,11 @@ class AuthenticationPage extends StatelessWidget {
               Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Image.asset("assets/icons/logo.png"),
+                    padding: const EdgeInsets.only(right: 0),
+                    child: Container(
+                        height: 180,
+                        width: 350,
+                        child: Image.asset("assets/icons/Nlogo.png")),
                   ),
                   Expanded(child: Container()),
                 ],
@@ -51,6 +124,11 @@ class AuthenticationPage extends StatelessWidget {
                 height: 15,
               ),
               TextField(
+                onChanged: (value) {
+                  setState(() {
+                    adminEmail = value;
+                  });
+                },
                 decoration: InputDecoration(
                     labelText: "Email",
                     hintText: "abc@domain.com",
@@ -61,6 +139,11 @@ class AuthenticationPage extends StatelessWidget {
                 height: 15,
               ),
               TextField(
+                onChanged: (value) {
+                  setState(() {
+                    adminPass = value;
+                  });
+                },
                 obscureText: true,
                 decoration: InputDecoration(
                     labelText: "Password",
@@ -68,7 +151,7 @@ class AuthenticationPage extends StatelessWidget {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
-               const SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               Row(
@@ -76,27 +159,27 @@ class AuthenticationPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Checkbox(value: true, onChanged: (value){}),
-                      const CustomText(text: "Remeber Me",),
+                      Checkbox(value: true, onChanged: (value) {}),
+                      const CustomText(
+                        text: "Remember Me",
+                      ),
                     ],
                   ),
-
                   const CustomText(
-                    text: "Forgot password?",
-                    color: active
-                  )
+                      text: "Forgot password?", color: active)
                 ],
               ),
-                const SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               InkWell(
-                onTap: (){
-                  Get.offAllNamed(rootRoute);
+                onTap: () {
+                  allowAdminToLogin();
                 },
                 child: Container(
-                  decoration: BoxDecoration(color: active, 
-                  borderRadius: BorderRadius.circular(20)),
+                  decoration: BoxDecoration(
+                      color: active,
+                      borderRadius: BorderRadius.circular(20)),
                   alignment: Alignment.center,
                   width: double.maxFinite,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -106,18 +189,15 @@ class AuthenticationPage extends StatelessWidget {
                   ),
                 ),
               ),
-
-               const SizedBox(
+              const SizedBox(
                 height: 15,
               ),
-
-              RichText(text: const TextSpan(
-                children: [
-                  TextSpan(text: "Do not have admin credentials? "),
-                  TextSpan(text: "Request Credentials! ", style: TextStyle(color: active))
-                ]
-              ))
-
+              RichText(
+                  text: const TextSpan(children: [
+                    TextSpan(text: "Do not have admin credentials? "),
+                    TextSpan(
+                        text: "Request Credentials! ", style: TextStyle(color: active))
+                  ]))
             ],
           ),
         ),

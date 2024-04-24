@@ -15,8 +15,8 @@ class OverviewCardsSmallScreen extends StatelessWidget {
       child: Column(
         children: [
           InfoCardSmall(
-                        title: "Rides in progress",
-                        value: "7",
+                        title: "Total Surveys",
+                        value: "17",
                         onTap: () {},
                         isActive: true,
                       ),
@@ -24,26 +24,19 @@ class OverviewCardsSmallScreen extends StatelessWidget {
                         height: width / 64,
                       ),
                       InfoCardSmall(
-                        title: "Packages delivered",
-                        value: "17",
+                        title: "Surveys Recieved",
+                        value: "10",
                         onTap: () {},
                       ),
                      SizedBox(
                         height: width / 64,
                       ),
                           InfoCardSmall(
-                        title: "Cancelled delivery",
-                        value: "3",
+                        title: "Surveys Pending",
+                        value: "7",
                         onTap: () {},
                       ),
-                      SizedBox(
-                        height: width / 64,
-                      ),
-                      InfoCardSmall(
-                        title: "Scheduled deliveries",
-                        value: "32",
-                        onTap: () {},
-                      ),
+
                   
         ],
       ),
