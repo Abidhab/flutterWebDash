@@ -305,31 +305,23 @@
 //     );
 //   }
 // }
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:html';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class SurveyPage extends StatefulWidget {
-  final String? projectName;
-  final String? clientName;
-  final String? eventName;
   final String? surveyId;
 
-  const SurveyPage({
-    Key? key,
-    this.projectName,
-    this.clientName,
-    this.eventName,
-    this.surveyId,
-  }) : super(key: key);
+  SurveyPage({this.surveyId});
 
   @override
   _SurveyPageState createState() => _SurveyPageState();
 }
 
 class _SurveyPageState extends State<SurveyPage> {
-  late Map<String, dynamic> surveyData = {};
-
+  String? surveyName;
+  String? clientName;
+  String? projectName;
   Map<String, String?> answers = {
     'q1': null,
     'q2': null,
@@ -337,143 +329,215 @@ class _SurveyPageState extends State<SurveyPage> {
     'q4': null,
     'q5': null,
   };
+  void submitSurvey() async {
+    // Validate if all questions are answered
+    if (!validate()) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Please answer all questions before submitting.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
 
-  @override
-  void initState() {
-    super.initState();
-    // Fetch survey data when the widget is initialized
-    fetchSurveyData();
-  }
+    // Convert answers map to a format compatible with Firestore
+    Map<String, dynamic> firestoreAnswers = {};
+    answers.forEach((key, value) {
+      firestoreAnswers[key] = value;
+    });
 
-  @override
-  void didUpdateWidget(covariant SurveyPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Fetch survey data whenever the widget is updated
-    fetchSurveyData();
-  }
+    // Create a map to store survey answers
+    Map<String, dynamic> surveyData = {
+      'surveyId': widget.surveyId,
+      'surveyName': surveyName,
+      'clientName': clientName,
+      'projectName': projectName,
+      'answers': firestoreAnswers,
+    };
 
-  void fetchSurveyData() async {
     try {
-      print(window.location.href);
-      print("widget.surveyId");
-      print(widget.surveyId);
-      final settingsUri = Uri.parse(window.location.href);
+      // Add the survey data to Firestore
+      await FirebaseFirestore.instance.collection('survey_answers').add(surveyData);
 
-//settingsUri.queryParameters is a map of all the query keys and values
-      final postID = settingsUri.queryParameters['id'];
-      print(postID); //will print "123"
-      print("abid khan fetchSurveyData1");
-      DocumentSnapshot surveyNamesSnapshot = await FirebaseFirestore.instance
-          .collection('survey_names')
-          .doc(widget.surveyId)
-          .get();
-      if (surveyNamesSnapshot.exists) {
-        setState(() {
-          surveyData = surveyNamesSnapshot.data() as Map<String, dynamic>;
-        });
-      }
-    } catch (e) {
-      print('Error fetching survey data: $e');
+      // Show success message
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text('Survey submitted successfully.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (error) {
+      print('Failed to submit survey: $error');
+      // Show error message
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to submit survey. Please try again later.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
   bool validate() {
     return answers.values.every((value) => value != null);
   }
-
-  void submitSurvey() async {
-    // Submit survey code
+  @override
+  void initState() {
+    super.initState();
+    // Fetch survey details if surveyId is provided
+    if (widget.surveyId != null) {
+      FirebaseFirestore.instance.collection('surveys').doc(widget.surveyId).get().then((snapshot) {
+        if (snapshot.exists) {
+          setState(() {
+            surveyName = snapshot['surveyName'];
+            clientName = snapshot['clientName'];
+            projectName = snapshot['projectName'];
+          });
+        } else {
+          print('Document does not exist');
+        }
+      }).catchError((error) {
+        print('Failed to fetch survey details: $error');
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("abid khan fetchSurveyData2");
-    fetchSurveyData();
     return Scaffold(
+
       appBar: AppBar(
-        title: const Text('Survey Page'),
+        automaticallyImplyLeading: false,
+
+        title: Text('Survey Details'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (surveyData.isNotEmpty) ...[
-              Text('Project Name: ${surveyData['projectName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Survey Name: ${surveyName ?? "Loading..."}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Client Name: ${clientName ?? "Loading..."}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ), Text(
+                'Project Name: ${projectName ?? "Loading..."}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              // Add more survey details if needed
+              SurveyQuestion(
+                question: 'How satisfied are you with the overall outcome of the project? Did we meet your expectations in terms of quality and deliverables?',
+                choices: ['Very satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very dissatisfied'],
+                questionId: 'q1',
+                onChanged: (value) {
+                  setState(() {
+                    answers['q1'] = value;
+                  });
+                },
+              ),
+              SurveyQuestion(
+                question: 'How would you rate our communication throughout the project?',
+                choices: ['Excellent', 'Good', 'Average', 'Poor', 'Very poor'],
+                questionId: 'q2',
+                onChanged: (value) {
+                  setState(() {
+                    answers['q2'] = value;
+                  });
+                },
+              ),
+              SurveyQuestion(
+                question: 'Were you satisfied with the level of support on & off-site and guidance provided during the project?',
+                choices: ['Very effectively', 'Effectively', 'Moderately effectively', 'Ineffectively', 'Very ineffectively'],
+                questionId: 'q3',
+                onChanged: (value) {
+                  setState(() {
+                    answers['q3'] = value;
+                  });
+                },
+              ),
+              SurveyQuestion(
+                question: 'How likely are you to recommend our services to others based on your experience with this project?',
+                choices: ['Very likely', 'Likely', 'Neutral', 'Unlikely', 'Very unlikely'],
+                questionId: 'q4',
+                onChanged: (value) {
+                  setState(() {
+                    answers['q4'] = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              const Text('Is there any additional feedback or suggestions you would like to provide to help us improve our services in the future?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 10),
-              Text('Client Name: ${surveyData['clientName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              const SizedBox(height: 10),
-              Text('Event Name: ${surveyData['eventName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                    answers['q5'] = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Additional feedback',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+
+                  onPressed: ()async{
+
+                    submitSurvey();
+                  },
+                  child:   Text('Submit'),
+                ),
+              ),
               const SizedBox(height: 20),
             ],
-            SurveyQuestion(
-              question: 'How satisfied are you with the overall outcome of the project? Did we meet your expectations in terms of quality and deliverables?',
-              choices: ['Very satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very dissatisfied'],
-              questionId: 'q1',
-              onChanged: (value) {
-                setState(() {
-                  answers['q1'] = value;
-                });
-              },
-            ),
-            SurveyQuestion(
-              question: 'How would you rate our communication throughout the project?',
-              choices: ['Excellent', 'Good', 'Average', 'Poor', 'Very poor'],
-              questionId: 'q2',
-              onChanged: (value) {
-                setState(() {
-                  answers['q2'] = value;
-                });
-              },
-            ),
-            SurveyQuestion(
-              question: 'Were you satisfied with the level of support on & off-site and guidance provided during the project?',
-              choices: ['Very effectively', 'Effectively', 'Moderately effectively', 'Ineffectively', 'Very ineffectively'],
-              questionId: 'q3',
-              onChanged: (value) {
-                setState(() {
-                  answers['q3'] = value;
-                });
-              },
-            ),
-            SurveyQuestion(
-              question: 'How likely are you to recommend our services to others based on your experience with this project?',
-              choices: ['Very likely', 'Likely', 'Neutral', 'Unlikely', 'Very unlikely'],
-              questionId: 'q4',
-              onChanged: (value) {
-                setState(() {
-                  answers['q4'] = value;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            const Text('Is there any additional feedback or suggestions you would like to provide to help us improve our services in the future?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 10),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  answers['q5'] = value;
-                });
-              },
-              decoration: const InputDecoration(
-                hintText: 'Additional feedback',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: submitSurvey,
-                child: const Text('Submit'),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
+          ),
         ),
       ),
     );
   }
+
+
 }
 
 class SurveyQuestion extends StatefulWidget {
