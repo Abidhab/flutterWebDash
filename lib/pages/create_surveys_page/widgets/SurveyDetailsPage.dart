@@ -311,16 +311,16 @@ import 'package:flutter/material.dart';
 import 'dart:html'as html ;
 
 
-class SurveyPage extends StatefulWidget {
+class SurveyDetailPage extends StatefulWidget {
   final String? surveyId;
 
-  SurveyPage({this.surveyId});
+  SurveyDetailPage({this.surveyId});
 
   @override
-  _SurveyPageState createState() => _SurveyPageState();
+  _SurveyDetailPageState createState() => _SurveyDetailPageState();
 }
 
-class _SurveyPageState extends State<SurveyPage> {
+class _SurveyDetailPageState extends State<SurveyDetailPage> {
   String? surveyName;
   String? clientName;
   String? projectName;
@@ -426,6 +426,7 @@ class _SurveyPageState extends State<SurveyPage> {
     super.initState();
     // Fetch survey details if surveyId is provided
     if (widget.surveyId != null) {
+      FirebaseFirestore.instance.collection('survey_questions').doc();
       FirebaseFirestore.instance.collection('surveys').doc(widget.surveyId).get().then((snapshot) {
         if (snapshot.exists) {
           setState(() {

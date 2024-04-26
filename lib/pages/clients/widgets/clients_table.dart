@@ -1,11 +1,19 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_dashboard/constants/style.dart';
-import 'package:flutter_web_dashboard/widgets/custom_text.dart';
 
-/// Example without datasource
-class Clientstable extends StatelessWidget {
-  const Clientstable({super.key});
+import '../../../constants/style.dart';
+import '../../../widgets/custom_text.dart';
+import '../clients.dart';
+
+class ClientsTable extends StatelessWidget {
+  final List<Map<String, dynamic>> surveyDataList;
+  final void Function(int index) onDetailPressed;
+
+  const ClientsTable({
+    Key? key,
+    required this.surveyDataList,
+    required this.onDetailPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,51 +26,71 @@ class Clientstable extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 30),
-      child: SizedBox(
-        height: (60 * 7) + 40,
-        child: DataTable2(
-            columnSpacing: 12,
-            dataRowHeight: 60,
-            headingRowHeight: 40,
-            horizontalMargin: 12,
-            minWidth: 600,
-            columns: const [
-              DataColumn2(
-                label: Text("Name"),
-                size: ColumnSize.L,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Row(
+            children: [
+              SizedBox(
+                width: 10,
               ),
-              DataColumn(
-                label: Text('Location'),
-              ),
-              DataColumn(
-                label: Text('Rating'),
-              ),
-              DataColumn(
-                label: Text('Action'),
+              CustomText(
+                text: "Surveys Received",
+                color: lightGrey,
+                weight: FontWeight.bold,
               ),
             ],
-            rows: List<DataRow>.generate(
-                15,
-                (index) => DataRow(cells: [
-                      const DataCell(CustomText(text: "Santos Enoque")),
-                      const DataCell(CustomText(text: "New yourk city")),
-                      const DataCell(Row(
+          ),
+          SizedBox(
+            height: (56 * surveyDataList.length) + 40,
+            child: DataTable2(
+              columnSpacing: 12,
+              dataRowHeight: 56,
+              headingRowHeight: 40,
+              horizontalMargin: 12,
+              minWidth: 600,
+              columns: const [
+                DataColumn2(
+                  label: Text("Project Name"),
+                  size: ColumnSize.L,
+                ),
+                DataColumn(
+                  label: Text('Client Name'),
+                ),
+                DataColumn(
+                  label: Text('Rating'),
+                ),
+                DataColumn(
+                  label: Text('Action'),
+                ),
+              ],
+              rows: List<DataRow>.generate(
+                surveyDataList.length,
+                    (index) => DataRow(
+                  cells: [
+                    DataCell(CustomText(text: surveyDataList[index]['projectName'])),
+                    DataCell(CustomText(text: surveyDataList[index]['clientName'])),
+                    DataCell(
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.deepOrange,
-                            size: 18,
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          CustomText(
-                            text: "4.5",
-                          )
+                          Icon(Icons.star, color: Colors.deepOrange, size: 18),
+                          SizedBox(width: 5),
+                          CustomText(text: "4.5"), // Assuming this value comes from surveyDataList
                         ],
-                      )),
-                      DataCell(Container(
+                      ),
+                    ),
+                    DataCell(
+                      InkWell(
+                        onTap: () {
+                          onDetailPressed(index); {
+                            Map<String, dynamic> selectedSurveyData = surveyDataList[index];
+                            // Navigator.of(context).push(MaterialPageRoute(
+                            //   builder: (context) => SearchScreen(selectedSurveyData: selectedSurveyData),
+                            // ));
+                          };// Pass the index to the callback function
+                        },
+                        child: Container(
                           decoration: BoxDecoration(
                             color: light,
                             borderRadius: BorderRadius.circular(20),
@@ -70,11 +98,19 @@ class Clientstable extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           child: CustomText(
-                            text: "Block",
+                            text: "Detail",
                             color: active.withOpacity(.7),
                             weight: FontWeight.bold,
-                          ))),
-                    ]))),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

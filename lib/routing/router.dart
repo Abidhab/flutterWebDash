@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_dashboard/pages/clients/clients.dart';
-import 'package:flutter_web_dashboard/pages/create_servey/show_survey.dart';
+
 
 import 'package:flutter_web_dashboard/pages/overview/overview.dart';
 import 'package:flutter_web_dashboard/routing/routes.dart';
 
 import '../pages/create_surveys_page/create_surveys_page.dart';
+import '../pages/show_create_servey/show_survey.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -16,7 +17,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case surveyPageRoute:
       return _getPageRoute(const ShowSurveysPage());
     case clientsPageRoute:
-      return _getPageRoute(const ClientsPage());
+      return _getPageRoute(SearchScreen());
     default:
       return _getPageRoute(const OverviewPage());
   }

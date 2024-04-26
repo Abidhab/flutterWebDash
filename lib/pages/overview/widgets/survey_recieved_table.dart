@@ -1,11 +1,18 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_dashboard/constants/style.dart';
-import 'package:flutter_web_dashboard/widgets/custom_text.dart';
 
-/// Example without datasource
+import '../../../constants/style.dart';
+import '../../../widgets/custom_text.dart';
+
 class SurveysRecievedTable extends StatelessWidget {
-  const SurveysRecievedTable({super.key});
+  final List<Map<String, dynamic>> surveyDataList;
+  final void Function(int index) onDetailPressed;
+
+  const SurveysRecievedTable({
+    Key? key,
+    required this.surveyDataList,
+    required this.onDetailPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +34,14 @@ class SurveysRecievedTable extends StatelessWidget {
                 width: 10,
               ),
               CustomText(
-                text: "Surveys Recieved",
+                text: "Surveys Received",
                 color: lightGrey,
                 weight: FontWeight.bold,
               ),
             ],
           ),
           SizedBox(
-            height: (56 * 7) + 40,
+            height: (56 * surveyDataList.length) + 40,
             child: DataTable2(
               columnSpacing: 12,
               dataRowHeight: 56,
@@ -57,33 +64,38 @@ class SurveysRecievedTable extends StatelessWidget {
                 ),
               ],
               rows: List<DataRow>.generate(
-                7,
-                (index) => DataRow(
+                surveyDataList.length,
+                    (index) => DataRow(
                   cells: [
-                    const DataCell(CustomText(text: "F1 Car")),
-                    const DataCell(CustomText(text: "Dr Qais")),
-                    const DataCell(
+                    DataCell(CustomText(text: surveyDataList[index]['projectName'])),
+                    DataCell(CustomText(text: surveyDataList[index]['clientName'])),
+                    DataCell(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.star, color: Colors.deepOrange, size: 18),
                           SizedBox(width: 5),
-                          CustomText(text: "4.5"),
+                          CustomText(text: "4.5"), // Assuming this value comes from surveyDataList
                         ],
                       ),
                     ),
                     DataCell(
-                      Container(
-                        decoration: BoxDecoration(
-                          color: light,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: active, width: .5),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: CustomText(
-                          text: "Detail",
-                          color: active.withOpacity(.7),
-                          weight: FontWeight.bold,
+                      InkWell(
+                        onTap: () {
+                          onDetailPressed(index); // Pass the index to the callback function
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: light,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: active, width: .5),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          child: CustomText(
+                            text: "Detail",
+                            color: active.withOpacity(.7),
+                            weight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
