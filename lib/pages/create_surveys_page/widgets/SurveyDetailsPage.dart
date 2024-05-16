@@ -1,315 +1,7 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-//
-//
-// class SurveyPage extends StatefulWidget {
-//     String? projectName;
-//     String? clientName;
-//     String? eventName;
-//     String? surveyId;
-//
-//     SurveyPage({
-//     Key? key,
-//       this.projectName,
-//       this.clientName,
-//       this.eventName,
-//       this.surveyId,
-//   }) : super(key: key);
-//
-//   @override
-//   _SurveyPageState createState() => _SurveyPageState();
-// }
-//
-// class _SurveyPageState extends State<SurveyPage>with WidgetsBindingObserver {
-//   late Map<String, dynamic> surveyData= {};
-//
-//   Map<String, String?> answers = {
-//     'q1': null,
-//     'q2': null,
-//     'q3': null,
-//     'q4': null,
-//     'q5': null,
-//   };
-//
-//
-//
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     print("ibadkhan");
-//     WidgetsBinding.instance.addObserver(this);
-//
-//     fetchSurveyData();
-//   }
-//   @override
-//   void didChangeDependencies() {
-//     super.didChangeDependencies();
-//     fetchSurveyData();
-//
-//   }
-//
-//   @override
-//   void dispose() {
-//     WidgetsBinding.instance.removeObserver(this);
-//     super.dispose();
-//   }
-//   void fetchSurveyData() async {
-//     try {
-// print("fetchSurveyData ibad");
-//       DocumentSnapshot surveyNamesSnapshot =
-//       await FirebaseFirestore.instance.collection('survey_names').doc(widget.surveyId).get();
-//       if (surveyNamesSnapshot.exists) {
-//         setState(() {
-//            surveyData = surveyNamesSnapshot.data() as Map<String, dynamic>;
-//         });
-//         print("surveyData from firebase");
-//         print(surveyData);
-//       }
-//     } catch (e) {
-//       print('Error fetching survey data: $e');
-//     }
-//   }
-//
-//
-//
-//   bool validate() {
-//     return answers.values.every((value) => value != null);
-//   }
-//
-//   void submitSurvey() async {
-//     try {
-//       if (!validate()) {
-//         showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return AlertDialog(
-//               title: const Text('Error'),
-//               content: const Text('Please answer all questions before submitting the survey.'),
-//               actions: <Widget>[
-//                 TextButton(
-//                   onPressed: () {
-//                     Navigator.of(context).pop();
-//                   },
-//                   child: const Text('OK'),
-//                 ),
-//               ],
-//             );
-//           },
-//         );
-//         return;
-//       }
-//
-//       final surveyData = {
-//         'surveyId': widget.surveyId,
-//         'projectName': widget.projectName,
-//         'clientName': widget.clientName,
-//         'eventName': widget.eventName,
-//         ...answers,
-//         'timestamp': FieldValue.serverTimestamp(),
-//       };
-//
-//       await FirebaseFirestore.instance.collection('surveys').doc(widget.surveyId).set(surveyData);
-//
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: const Text('Survey Submitted'),
-//             content: const Text('Thank you for completing the survey.'),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: const Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//
-//       setState(() {
-//         answers = {
-//           'q1': null,
-//           'q2': null,
-//           'q3': null,
-//           'q4': null,
-//           'q5': null,
-//         };
-//       });
-//     } catch (e) {
-//       print('Error submitting survey: $e');
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: const Text('Error'),
-//             content: const Text('An error occurred while submitting the survey.'),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: const Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     }
-//   }
-//
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     debugPrint(" form survey ibad");
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Surveysadas'),
-//       ),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.all(20.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             if (surveyData != null) ...[
-//               Text('Project Name: ${surveyData['projectName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-//               const SizedBox(height: 10),
-//               Text('Client Name: ${surveyData['clientName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-//               const SizedBox(height: 10),
-//               Text('Event Name: ${surveyData['eventName']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-//               const SizedBox(height: 20),
-//             ],
-//             SurveyQuestion(
-//               question: 'How satisfied are you with the overall outcome of the project? Did we meet your expectations in terms of quality and deliverables?',
-//               choices: ['Very satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very dissatisfied'],
-//               questionId: 'q1',
-//               onChanged: (value) {
-//                 setState(() {
-//                   answers['q1'] = value;
-//                 });
-//               },
-//             ),
-//             SurveyQuestion(
-//               question: 'How would you rate our communication throughout the project?',
-//               choices: ['Excellent', 'Good', 'Average', 'Poor', 'Very poor'],
-//               questionId: 'q2',
-//               onChanged: (value) {
-//                 setState(() {
-//                   answers['q2'] = value;
-//                 });
-//               },
-//             ),
-//             SurveyQuestion(
-//               question: 'Were you satisfied with the level of support on & off-site and guidance provided during the project?',
-//               choices: ['Very effectively', 'Effectively', 'Moderately effectively', 'Ineffectively', 'Very ineffectively'],
-//               questionId: 'q3',
-//               onChanged: (value) {
-//                 setState(() {
-//                   answers['q3'] = value;
-//                 });
-//               },
-//             ),
-//             SurveyQuestion(
-//               question: 'How likely are you to recommend our services to others based on your experience with this project?',
-//               choices: ['Very likely', 'Likely', 'Neutral', 'Unlikely', 'Very unlikely'],
-//               questionId: 'q4',
-//               onChanged: (value) {
-//                 setState(() {
-//                   answers['q4'] = value;
-//                 });
-//               },
-//             ),
-//             const SizedBox(height: 20),
-//             const Text('Is there any additional feedback or suggestions you would like to provide to help us improve our services in the future?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-//             const SizedBox(height: 10),
-//             TextField(
-//               onChanged: (value) {
-//                 setState(() {
-//                   answers['q5'] = value;
-//                 });
-//               },
-//               decoration: const InputDecoration(
-//                 hintText: 'Additional feedback',
-//                 border: OutlineInputBorder(),
-//               ),
-//               maxLines: 3,
-//             ),
-//             const SizedBox(height: 20),
-//             Center(
-//               child: ElevatedButton(
-//                 onPressed: submitSurvey,
-//                 child: const Text('Submit'),
-//               ),
-//             ),
-//             const SizedBox(height: 20),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-// class SurveyQuestion extends StatefulWidget {
-//   final String question;
-//   final List<String> choices;
-//   final String questionId;
-//   final Function(String?) onChanged;
-//
-//   const SurveyQuestion({
-//     Key? key,
-//     required this.question,
-//     required this.choices,
-//     required this.questionId,
-//     required this.onChanged,
-//   }) : super(key: key);
-//
-//   @override
-//   _SurveyQuestionState createState() => _SurveyQuestionState();
-// }
-//
-// class _SurveyQuestionState extends State<SurveyQuestion> {
-//   String? selectedChoice;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(widget.question, style: const TextStyle(fontSize: 18)),
-//         Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: widget.choices.map((choice) {
-//             return Row(
-//               children: [
-//                 Radio<String>(
-//                   value: choice,
-//                   groupValue: selectedChoice,
-//                   onChanged: (value) {
-//                     setState(() {
-//                       selectedChoice = value;
-//                     });
-//                     widget.onChanged(value);
-//                   },
-//                 ),
-//                 Text(choice),
-//               ],
-//             );
-//           }).toList(),
-//         ),
-//       ],
-//     );
-//   }
-// }
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'dart:html'as html ;
+import 'dart:html' as html;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class SurveyDetailPage extends StatefulWidget {
   final String? surveyId;
@@ -343,13 +35,13 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
             actions: [
               TextButton(
                 onPressed: () {
-                  html.window.location.href = 'about:blank'; // This will make the page blank
+                  html.window.location.href =
+                      'about:blank'; // This will make the page blank
                   // Alternatively, you can use:
                   // html.window.close(); // This will close the entire web page
                 },
                 child: Text('OK'),
               ),
-
             ],
           );
         },
@@ -374,7 +66,9 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
 
     try {
       // Add the survey data to Firestore
-      await FirebaseFirestore.instance.collection('survey_answers').add(surveyData);
+      await FirebaseFirestore.instance
+          .collection('survey_answers')
+          .add(surveyData);
 
       // Show success message
       showDialog(
@@ -421,13 +115,22 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
   bool validate() {
     return answers.values.every((value) => value != null);
   }
+
+  late Future<List<Map<String, dynamic>>> _surveyQuestionsFuture;
+
   @override
   void initState() {
     super.initState();
-    // Fetch survey details if surveyId is provided
+
+    _surveyQuestionsFuture =
+        SurveyService().getSurveyQuestions(widget.surveyId!);
+
     if (widget.surveyId != null) {
-      FirebaseFirestore.instance.collection('survey_questions').doc();
-      FirebaseFirestore.instance.collection('surveys').doc(widget.surveyId).get().then((snapshot) {
+      FirebaseFirestore.instance
+          .collection('surveys')
+          .doc(widget.surveyId)
+          .get()
+          .then((snapshot) {
         if (snapshot.exists) {
           setState(() {
             surveyName = snapshot['surveyName'];
@@ -446,10 +149,8 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         automaticallyImplyLeading: false,
-
         title: Text('Survey Details'),
       ),
       body: Padding(
@@ -460,58 +161,69 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
             children: [
               Text(
                 'Survey Name: ${surveyName ?? "Loading..."}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
               ),
               Text(
                 'Client Name: ${clientName ?? "Loading..."}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
-              ), Text(
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+              Text(
                 'Project Name: ${projectName ?? "Loading..."}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
               ),
               // Add more survey details if needed
-              SurveyQuestion(
-                question: 'How satisfied are you with the overall outcome of the project? Did we meet your expectations in terms of quality and deliverables?',
-                choices: ['Very satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very dissatisfied'],
-                questionId: 'q1',
-                onChanged: (value) {
-                  setState(() {
-                    answers['q1'] = value;
-                  });
-                },
-              ),
-              SurveyQuestion(
-                question: 'How would you rate our communication throughout the project?',
-                choices: ['Excellent', 'Good', 'Average', 'Poor', 'Very poor'],
-                questionId: 'q2',
-                onChanged: (value) {
-                  setState(() {
-                    answers['q2'] = value;
-                  });
-                },
-              ),
-              SurveyQuestion(
-                question: 'Were you satisfied with the level of support on & off-site and guidance provided during the project?',
-                choices: ['Very effectively', 'Effectively', 'Moderately effectively', 'Ineffectively', 'Very ineffectively'],
-                questionId: 'q3',
-                onChanged: (value) {
-                  setState(() {
-                    answers['q3'] = value;
-                  });
-                },
-              ),
-              SurveyQuestion(
-                question: 'How likely are you to recommend our services to others based on your experience with this project?',
-                choices: ['Very likely', 'Likely', 'Neutral', 'Unlikely', 'Very unlikely'],
-                questionId: 'q4',
-                onChanged: (value) {
-                  setState(() {
-                    answers['q4'] = value;
-                  });
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: _surveyQuestionsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No questions found.'));
+                  } else {
+                    List<Map<String, dynamic>> questions = snapshot.data!;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: questions.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> questionData = questions[index];
+                        String question = questionData['question'];
+                        List<String> choices =
+                            List<String>.from(questionData['choices']);
+                        String questionId = 'q${index + 1}';
+
+                        // Initialize answers map with null values if not already initialized
+                        answers.putIfAbsent(questionId, () => null);
+
+                        return SurveyQuestion(
+                          question: question,
+                          choices: choices,
+                          questionId: questionId,
+                          onChanged: (value) {
+                            setState(() {
+                              answers[questionId] = value;
+                            });
+                          },
+                        );
+                      },
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 20),
-              const Text('Is there any additional feedback or suggestions you would like to provide to help us improve our services in the future?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              const Text(
+                  'Is there any additional feedback or suggestions you would like to provide to help us improve our services in the future?',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 10),
               TextField(
                 onChanged: (value) {
@@ -528,12 +240,10 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-
-                  onPressed: ()async{
-
+                  onPressed: () async {
                     submitSurvey();
                   },
-                  child:   Text('Submit'),
+                  child: Text('Submit'),
                 ),
               ),
               const SizedBox(height: 20),
@@ -543,8 +253,6 @@ class _SurveyDetailPageState extends State<SurveyDetailPage> {
       ),
     );
   }
-
-
 }
 
 class SurveyQuestion extends StatefulWidget {
@@ -573,7 +281,8 @@ class _SurveyQuestionState extends State<SurveyQuestion> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.question, style: const TextStyle(fontSize: 18, color: Colors.black)),
+        Text(widget.question,
+            style: const TextStyle(fontSize: 18, color: Colors.black)),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: widget.choices.map((choice) {
@@ -589,12 +298,36 @@ class _SurveyQuestionState extends State<SurveyQuestion> {
                     widget.onChanged(value);
                   },
                 ),
-                Text(choice, style: TextStyle(color: Colors.black),),
+                Text(
+                  choice,
+                  style: TextStyle(color: Colors.black),
+                ),
               ],
             );
           }).toList(),
         ),
       ],
     );
+  }
+}
+
+class SurveyService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<List<Map<String, dynamic>>> getSurveyQuestions(String surveyId) async {
+    try {
+      DocumentSnapshot snapshot =
+          await _firestore.collection('survey_questions').doc(surveyId).get();
+      if (snapshot.exists) {
+        Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('questions')) {
+          return List<Map<String, dynamic>>.from(data['questions']);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching survey questions: $e');
+      return [];
+    }
   }
 }
